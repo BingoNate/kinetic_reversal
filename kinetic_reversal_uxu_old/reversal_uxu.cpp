@@ -789,7 +789,6 @@ void simulation() {
 
     interation(ftu, pftu, fmtu, pfmtu, x1, x2, nowtime);
   }
-
   free_vector(x1, 1, Nx);
   free_vector(x2, 1, Ny);
   free_f3tensor(ftu, 1, M, 1, Nx, 1, Ny);
