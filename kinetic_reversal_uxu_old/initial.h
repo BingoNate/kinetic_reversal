@@ -3,6 +3,7 @@
 
 #include "NR_kinetic_old.h"
 #include "kinetic_parameters_old.h"
+
 const int gap_ini = Ny / 4;
 #define PREP_check(Fpre, Fnum, R_W)              \
   {                                              \

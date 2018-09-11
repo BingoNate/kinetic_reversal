@@ -52,7 +52,7 @@ void outscreen(int m, double ***ftu, double ***fmtu) {
   aver_polar = sqrt(SQR(sump2) + SQR(sumq2)) / rho;
   printf("T = %d:\n", m);
   printf("ft = %.6f, fm = %.6f\nNematic = %.6f, Polar = %.6f\n\n", sum, psum,
-         aver_nematic, aver_polar);  // number conservation,global order
+         aver_nematic, aver_polar);  
   free_matrix(p1, 1, Nx, 1, Ny);
   free_matrix(q1, 1, Nx, 1, Ny);
   free_matrix(p2, 1, Nx, 1, Ny);

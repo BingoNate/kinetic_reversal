@@ -8,6 +8,7 @@
 #else
 #define Subdirectory "Data//"
 #endif              // _MSC_VER
+
 const int M = 30;   // Splitting the 2*PI angles to M pieces.
 const int SST = 1;  // Actually no meaning.
 const int NDFR = 0;

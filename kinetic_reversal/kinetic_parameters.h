@@ -26,7 +26,7 @@ double DPP;  // D_para + D_perp; Keep 2.8 fixed.
 double DFR;  // Dr: rotaional diffusion. default = 4.0.
 double DFQ;  //= 0.50 * (DPP - DNN);// Actually is D_perp.
 double DFP;  //= DNN;        // D_para - D_perp.
-double dxx;  // Grid size.
+double dxx;  
 double dyy;
 
 long seed = static_cast<long>(time(NULL));

@@ -32,7 +32,6 @@ inline T SQR(const T a) {
 }
 
 void nrerror(const char error_text[])
-/*Numerical Recipes standard error handler*/
 {
   fprintf(stderr, "Numerial Recipes run-time error...\n");
   fprintf(stderr, "%s\n", error_text);

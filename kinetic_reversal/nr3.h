@@ -35,15 +35,13 @@ using namespace std;
       char PRT[100];                             \
       sprintf_s(PRT, "%s%dsA.dat", Fpre, Fnum);  \
       if ((err = fopen_s(&fp, PRT, R_W)) != 0) { \
-        printf_s("Fale File=%s.\n", PRT);          \
+        printf_s("Fale File=%s.\n", PRT);        \
         exit(0);                                 \
       }                                          \
     }
 #define CLSP      \
   { fclose(fp); } \
   }
-
-// macro-like inline functions
 
 template <class T>
 inline T SQR(const T a) {

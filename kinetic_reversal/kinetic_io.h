@@ -12,7 +12,7 @@ void make_dir() {
 void adjust_para() {
   DPP = D_para + D_perp;
   DNN = D_para - D_perp;
-  // Set anisotropic diffusion constants. Isotropic is set D_para = D_perp.
+  // Set anisotropic diffusion constants. 
   // Best set may be set D_para = v0^2 / (2 * reversal).
   DFQ = D_perp;
   DFP = D_para - D_perp;

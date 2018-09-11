@@ -599,7 +599,7 @@ int differ_y(Mat3DDoub &ftu, Mat3DDoub &pftu, Mat3DDoub &fmtu, Mat3DDoub &pfmtu,
   for (k = 0; k < M; k++)
     for (i = 0; i < Nx; i++)
       for (j = 0; j < Ny; j++) {
-        nftu[k][i][j] = 0;  // Set to 0.
+        nftu[k][i][j] = 0; 
       }
 
   /********f_M(r,u,t)********/
