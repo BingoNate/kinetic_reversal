@@ -40,7 +40,6 @@ void nrerror(const char error_text[])
 }
 
 int* ivector(long nl, long nh)
-/* allocate an int vector with subscript range v[nl..nh] */
 {
   int* v;
   v = (int*)malloc((size_t)((nh - nl + 1 + NR_END) * sizeof(int)));

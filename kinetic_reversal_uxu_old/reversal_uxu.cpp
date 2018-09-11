@@ -777,8 +777,7 @@ void simulation() {
   pfmtu = f3tensor(1, M, 1, Nx, 1, Ny);
   //initial(x1, x2, ftu, pftu, fmtu, pfmtu);
   initial_read_band(x1, x2, ftu, pftu, fmtu, pfmtu);
-
-  //  initial_continue(x1, x2, ftu, pftu, fmtu, pfmtu);
+ 
   for (m = 1; m <= TOTALTIME; m++) {
     nowtime = m;
 #ifdef _MSC_VER

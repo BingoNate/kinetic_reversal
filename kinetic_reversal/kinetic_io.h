@@ -20,7 +20,7 @@ void adjust_para() {
   LX = static_cast<int>(dxx * Nx);
   LY = static_cast<int>(dyy * Ny);
   dh = dxx;
-  dtt *= 3.0 / 4.0;  // Only 1 equation. Rescale delta t.
+  dtt *= 3.0 / 4.0;  // Rescale delta t.
 }
 
 void read_para() {

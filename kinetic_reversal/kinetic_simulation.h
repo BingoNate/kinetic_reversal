@@ -28,7 +28,7 @@ void calculate_potential_w(const Mat3DDoub &ftu, Mat3DDoub &kru) {
   for (k1 = 0; k1 < M; k1++) {
     for (i = 0; i < Nx; i++)
       for (j = 0; j < Ny; j++) {
-        kru[k1][i][j] = kru[k1][i][j] * dta * 2;  // W(r,u).
+        kru[k1][i][j] = kru[k1][i][j] * dta * 2;  // W(r,u) calculate.
       }
   }
 }

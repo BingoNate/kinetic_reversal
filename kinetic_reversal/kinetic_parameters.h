@@ -14,7 +14,7 @@ const double DRV = 0.0;     // No meaning.
 int TOTALTIME;  // Total simulation time.
 int INTER1;
 int INTER2;
-int Nx;  // Actually use.
+int Nx;  
 int Ny;
 
 double v0;        // self-propelled velocity for drift terms.

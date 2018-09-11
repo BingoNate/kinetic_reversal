@@ -26,7 +26,7 @@ void outscreen(int m, double ***ftu, double ***fmtu) {
       p2[i][j] = 0;
       q2[i][j] = 0;
 
-      for (k = 1; k <= M; k++) /*[0, PI]*/
+      for (k = 1; k <= M; k++)
       {
         sum += ftu[k][i][j];
         psum += fmtu[k][i][j];
