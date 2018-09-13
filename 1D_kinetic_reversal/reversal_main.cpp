@@ -84,7 +84,7 @@ int differ1(double ***ftu, double ***pftu, double ***fmtu, double ***pfmtu,
 
         a[i][j][k] =
             -maxd * dtt / (3 * dta * dta) -
-            DFR * (kru[ak][i][j] - kru[k][i][j]) * dtt / (6 * dta * dta);  //?
+            DFR * (kru[ak][i][j] - kru[k][i][j]) * dtt / (6 * dta * dta);  
       }
 
   for (i = 1; i <= Nx; i++)
@@ -159,31 +159,42 @@ int differ1(double ***ftu, double ***pftu, double ***fmtu, double ***pfmtu,
 
         nftu[k][i][j] += (DFP *
                           (ucx[k] * ucx[k] *
-                               ((ftu[k][bi][j] - ftu[k][i][j]) -
-                                (ftu[k][i][j] - ftu[k][ai][j])) +
-                           usy[k] * usy[k] *
-                               ((ftu[k][i][bj] - ftu[k][i][j]) -
-                                (ftu[k][i][j] - ftu[k][i][aj])) +
-                           0.5 * usy[k] * ucx[k] *
-                               ((ftu[k][bi][bj] - ftu[k][bi][aj]) -
-                                (ftu[k][ai][bj] - ftu[k][ai][aj]))) /
-                          (dh * dh));  // DFP=D_para-D_perp
+                           ((ftu[k][bi][j] - ftu[k][i][j]) -
+                            (ftu[k][i][j] - ftu[k][ai][j]))) /
+                          (dxx * dxx));  // DFP=D_para-D_perp
         nftu[k][i][j] += (DFQ *
                           (((ftu[k][bi][j] - ftu[k][i][j]) -
-                            (ftu[k][i][j] - ftu[k][ai][j])) +
-                           ((ftu[k][i][bj] - ftu[k][i][j]) -
-                            (ftu[k][i][j] - ftu[k][i][aj]))) /
-                          (dh * dh));  // DFQ=D_perp
-        nftu[k][i][j] +=
-            -v0 * (ucx[k] * (fmtu[k][bi][j] - fmtu[k][ai][j]) / (2.0 * dh) +
-                   usy[k] * (fmtu[k][i][bj] - fmtu[k][i][aj]) /
-                       (2.0 * dh));  // drift term.
+                            (ftu[k][i][j] - ftu[k][ai][j]))) /
+                          (dxx * dxx));  // DFQ=D_perp
+        nftu[k][i][j] += -v0 * (ucx[k] * (fmtu[k][bi][j] - fmtu[k][ai][j]) /
+                                (2.0 * dxx));  // drift term.
+        //nftu[k][i][j] += (DFP *
+        //                  (ucx[k] * ucx[k] *
+        //                       ((ftu[k][bi][j] - ftu[k][i][j]) -
+        //                        (ftu[k][i][j] - ftu[k][ai][j])) +
+        //                   usy[k] * usy[k] *
+        //                       ((ftu[k][i][bj] - ftu[k][i][j]) -
+        //                        (ftu[k][i][j] - ftu[k][i][aj])) +
+        //                   0.5 * usy[k] * ucx[k] *
+        //                       ((ftu[k][bi][bj] - ftu[k][bi][aj]) -
+        //                        (ftu[k][ai][bj] - ftu[k][ai][aj]))) /
+        //                  (dh * dh));  // DFP=D_para-D_perp
+        //nftu[k][i][j] += (DFQ *
+        //                  (((ftu[k][bi][j] - ftu[k][i][j]) -
+        //                    (ftu[k][i][j] - ftu[k][ai][j])) +
+        //                   ((ftu[k][i][bj] - ftu[k][i][j]) -
+        //                    (ftu[k][i][j] - ftu[k][i][aj]))) /
+        //                  (dh * dh));  // DFQ=D_perp
+        //nftu[k][i][j] +=
+        //    -v0 * (ucx[k] * (fmtu[k][bi][j] - fmtu[k][ai][j]) / (2.0 * dh) +
+        //           usy[k] * (fmtu[k][i][bj] - fmtu[k][i][aj]) /
+        //               (2.0 * dh));  // drift term.
       }
 
   for (k = 1; k <= M; k++)
     for (i = 1; i <= Nx; i++)
       for (j = 1; j <= Ny; j++) {
-        nftu[k][i][j] = dtt * nftu[k][i][j] / 3 + ftu[k][i][j];
+        nftu[k][i][j] = dtt * nftu[k][i][j] / 2 + ftu[k][i][j];
       }
 
   /***************Updating to tmp variable*********************/
@@ -232,31 +243,44 @@ int differ1(double ***ftu, double ***pftu, double ***fmtu, double ***pfmtu,
         nftu[k][i][j] += (DFP *
                           (ucx[k] * ucx[k] *
                                ((fmtu[k][bi][j] - fmtu[k][i][j]) -
-                                (fmtu[k][i][j] - fmtu[k][ai][j])) +
-                           usy[k] * usy[k] *
-                               ((fmtu[k][i][bj] - fmtu[k][i][j]) -
-                                (fmtu[k][i][j] - fmtu[k][i][aj])) +
-                           0.5 * usy[k] * ucx[k] *
-                               ((fmtu[k][bi][bj] - fmtu[k][bi][aj]) -
-                                (fmtu[k][ai][bj] - fmtu[k][ai][aj]))) /
-                          (dh * dh));  // DFP=D_para-D_perp
+                                (fmtu[k][i][j] - fmtu[k][ai][j])) 
+                          ) /
+                          (dxx * dxx));  // DFP=D_para-D_perp
         nftu[k][i][j] += (DFQ *
                           (((fmtu[k][bi][j] - fmtu[k][i][j]) -
-                            (fmtu[k][i][j] - fmtu[k][ai][j])) +
-                           ((fmtu[k][i][bj] - fmtu[k][i][j]) -
-                            (fmtu[k][i][j] - fmtu[k][i][aj]))) /
-                          (dh * dh));  // DFQ=D_perp
-        nftu[k][i][j] +=
-            -v0 * (ucx[k] * (ftu[k][bi][j] - ftu[k][ai][j]) / (2.0 * dh) +
-                   usy[k] * (ftu[k][i][bj] - ftu[k][i][aj]) /
-                       (2.0 * dh));                        // drift term.
+                            (fmtu[k][i][j] - fmtu[k][ai][j]))) /
+                          (dxx * dxx));  // DFQ=D_perp
+        nftu[k][i][j] += -v0 * (ucx[k] * (ftu[k][bi][j] - ftu[k][ai][j]) /
+                                (2.0 * dxx));              // drift term.
         nftu[k][i][j] += -2.0 * reversal * fmtu[k][i][j];  // reversal term.
+        //nftu[k][i][j] += (DFP *
+        //                  (ucx[k] * ucx[k] *
+        //                       ((fmtu[k][bi][j] - fmtu[k][i][j]) -
+        //                        (fmtu[k][i][j] - fmtu[k][ai][j])) +
+        //                   usy[k] * usy[k] *
+        //                       ((fmtu[k][i][bj] - fmtu[k][i][j]) -
+        //                        (fmtu[k][i][j] - fmtu[k][i][aj])) +
+        //                   0.5 * usy[k] * ucx[k] *
+        //                       ((fmtu[k][bi][bj] - fmtu[k][bi][aj]) -
+        //                        (fmtu[k][ai][bj] - fmtu[k][ai][aj]))) /
+        //                  (dh * dh));  // DFP=D_para-D_perp
+        //nftu[k][i][j] += (DFQ *
+        //                  (((fmtu[k][bi][j] - fmtu[k][i][j]) -
+        //                    (fmtu[k][i][j] - fmtu[k][ai][j])) +
+        //                   ((fmtu[k][i][bj] - fmtu[k][i][j]) -
+        //                    (fmtu[k][i][j] - fmtu[k][i][aj]))) /
+        //                  (dh * dh));  // DFQ=D_perp
+        //nftu[k][i][j] +=
+        //    -v0 * (ucx[k] * (ftu[k][bi][j] - ftu[k][ai][j]) / (2.0 * dh) +
+        //           usy[k] * (ftu[k][i][bj] - ftu[k][i][aj]) /
+        //               (2.0 * dh));                        // drift term.
+        //nftu[k][i][j] += -2.0 * reversal * fmtu[k][i][j];  // reversal term.
       }
 
   for (k = 1; k <= M; k++)
     for (i = 1; i <= Nx; i++)
       for (j = 1; j <= Ny; j++) {
-        nftu[k][i][j] = dtt * nftu[k][i][j] / 3 + fmtu[k][i][j];
+        nftu[k][i][j] = dtt * nftu[k][i][j] / 2 + fmtu[k][i][j];
       }
 
   /***************Updating to tmp variable*********************/
@@ -356,18 +380,6 @@ int differ2(double ***ftu, double ***pftu, double ***fmtu, double ***pfmtu,
 
         if (bk > M) bk -= M;
 
-        nftu[k][i][j] += (DFP *
-                          (usy[k] * usy[k] *
-                               ((ftu[k][i][bj] - ftu[k][i][j]) -
-                                (ftu[k][i][j] - ftu[k][i][aj])) +
-                           0.5 * usy[k] * ucx[k] *
-                               ((ftu[k][bi][bj] - ftu[k][bi][aj]) -
-                                (ftu[k][ai][bj] - ftu[k][ai][aj]))) /
-                          (dh * dh));
-        nftu[k][i][j] += (DFQ *
-                          (((ftu[k][i][bj] - ftu[k][i][j]) -
-                            (ftu[k][i][j] - ftu[k][i][aj]))) /
-                          (dh * dh));
         nftu[k][i][j] += ((DFR * ((ftu[bk][i][j] - ftu[k][i][j]) -
                                   (ftu[k][i][j] - ftu[ak][i][j]))) /
                           (dta * dta));
@@ -376,16 +388,38 @@ int differ2(double ***ftu, double ***pftu, double ***fmtu, double ***pfmtu,
                                   (ftu[k][i][j] + ftu[ak][i][j]) *
                                       (kru[k][i][j] - kru[ak][i][j]))) /
                           (2 * dta * dta));
-        nftu[k][i][j] +=
-            -v0 * (ucx[k] * (fmtu[k][bi][j] - fmtu[k][ai][j]) / (2.0 * dh) +
-                   usy[k] * (fmtu[k][i][bj] - fmtu[k][i][aj]) /
-                       (2.0 * dh));  // drift term. Here Modified.
+        nftu[k][i][j] += -v0 * (ucx[k] * (fmtu[k][bi][j] - fmtu[k][ai][j]) /
+                                (2.0 * dxx));  // drift term. Here Modified.
+        //nftu[k][i][j] += (DFP *
+        //                  (usy[k] * usy[k] *
+        //                       ((ftu[k][i][bj] - ftu[k][i][j]) -
+        //                        (ftu[k][i][j] - ftu[k][i][aj])) +
+        //                   0.5 * usy[k] * ucx[k] *
+        //                       ((ftu[k][bi][bj] - ftu[k][bi][aj]) -
+        //                        (ftu[k][ai][bj] - ftu[k][ai][aj]))) /
+        //                  (dh * dh));
+        //nftu[k][i][j] += (DFQ *
+        //                  (((ftu[k][i][bj] - ftu[k][i][j]) -
+        //                    (ftu[k][i][j] - ftu[k][i][aj]))) /
+        //                  (dh * dh));
+        //nftu[k][i][j] += ((DFR * ((ftu[bk][i][j] - ftu[k][i][j]) -
+        //                          (ftu[k][i][j] - ftu[ak][i][j]))) /
+        //                  (dta * dta));
+        //nftu[k][i][j] += ((DFR * ((ftu[bk][i][j] + ftu[k][i][j]) *
+        //                              (kru[bk][i][j] - kru[k][i][j]) -
+        //                          (ftu[k][i][j] + ftu[ak][i][j]) *
+        //                              (kru[k][i][j] - kru[ak][i][j]))) /
+        //                  (2 * dta * dta));
+        //nftu[k][i][j] +=
+        //    -v0 * (ucx[k] * (fmtu[k][bi][j] - fmtu[k][ai][j]) / (2.0 * dh) +
+        //           usy[k] * (fmtu[k][i][bj] - fmtu[k][i][aj]) /
+        //               (2.0 * dh));  // drift term. Here Modified.
       }
 
   for (k = 1; k <= M; k++)
     for (i = 1; i <= Nx; i++)
       for (j = 1; j <= Ny; j++) {
-        nftu[k][i][j] = dtt * nftu[k][i][j] / 3 + ftu[k][i][j];
+        nftu[k][i][j] = dtt * nftu[k][i][j] / 2 + ftu[k][i][j];
       }
 
   /***************Updating to tmp variable*********************/
@@ -431,18 +465,6 @@ int differ2(double ***ftu, double ***pftu, double ***fmtu, double ***pfmtu,
 
         if (bk > M) bk -= M;
 
-        nftu[k][i][j] += (DFP *
-                          (usy[k] * usy[k] *
-                               ((fmtu[k][i][bj] - fmtu[k][i][j]) -
-                                (fmtu[k][i][j] - fmtu[k][i][aj])) +
-                           0.5 * usy[k] * ucx[k] *
-                               ((fmtu[k][bi][bj] - fmtu[k][bi][aj]) -
-                                (fmtu[k][ai][bj] - fmtu[k][ai][aj]))) /
-                          (dh * dh));
-        nftu[k][i][j] += (DFQ *
-                          (((fmtu[k][i][bj] - fmtu[k][i][j]) -
-                            (fmtu[k][i][j] - fmtu[k][i][aj]))) /
-                          (dh * dh));
         nftu[k][i][j] += ((DFR * ((fmtu[bk][i][j] - fmtu[k][i][j]) -
                                   (fmtu[k][i][j] - fmtu[ak][i][j]))) /
                           (dta * dta));
@@ -451,17 +473,40 @@ int differ2(double ***ftu, double ***pftu, double ***fmtu, double ***pfmtu,
                                   (fmtu[k][i][j] + fmtu[ak][i][j]) *
                                       (kru[k][i][j] - kru[ak][i][j]))) /
                           (2 * dta * dta));
-        nftu[k][i][j] +=
-            -v0 * (ucx[k] * (ftu[k][bi][j] - ftu[k][ai][j]) / (2.0 * dh) +
-                   usy[k] * (ftu[k][i][bj] - ftu[k][i][aj]) /
-                       (2.0 * dh));                        // drift term.
+        nftu[k][i][j] += -v0 * (ucx[k] * (ftu[k][bi][j] - ftu[k][ai][j]) /
+                                (2.0 * dxx));              // drift term.
         nftu[k][i][j] += -2.0 * reversal * fmtu[k][i][j];  // drift term.
+        //nftu[k][i][j] += (DFP *
+        //                  (usy[k] * usy[k] *
+        //                       ((fmtu[k][i][bj] - fmtu[k][i][j]) -
+        //                        (fmtu[k][i][j] - fmtu[k][i][aj])) +
+        //                   0.5 * usy[k] * ucx[k] *
+        //                       ((fmtu[k][bi][bj] - fmtu[k][bi][aj]) -
+        //                        (fmtu[k][ai][bj] - fmtu[k][ai][aj]))) /
+        //                  (dh * dh));
+        //nftu[k][i][j] += (DFQ *
+        //                  (((fmtu[k][i][bj] - fmtu[k][i][j]) -
+        //                    (fmtu[k][i][j] - fmtu[k][i][aj]))) /
+        //                  (dh * dh));
+        //nftu[k][i][j] += ((DFR * ((fmtu[bk][i][j] - fmtu[k][i][j]) -
+        //                          (fmtu[k][i][j] - fmtu[ak][i][j]))) /
+        //                  (dta * dta));
+        //nftu[k][i][j] += ((DFR * ((fmtu[bk][i][j] + fmtu[k][i][j]) *
+        //                              (kru[bk][i][j] - kru[k][i][j]) -
+        //                          (fmtu[k][i][j] + fmtu[ak][i][j]) *
+        //                              (kru[k][i][j] - kru[ak][i][j]))) /
+        //                  (2 * dta * dta));
+        //nftu[k][i][j] +=
+        //    -v0 * (ucx[k] * (ftu[k][bi][j] - ftu[k][ai][j]) / (2.0 * dh) +
+        //           usy[k] * (ftu[k][i][bj] - ftu[k][i][aj]) /
+        //               (2.0 * dh));                        // drift term.
+        //nftu[k][i][j] += -2.0 * reversal * fmtu[k][i][j];  // drift term.
       }
 
   for (k = 1; k <= M; k++)
     for (i = 1; i <= Nx; i++)
       for (j = 1; j <= Ny; j++) {
-        nftu[k][i][j] = dtt * nftu[k][i][j] / 3 + fmtu[k][i][j];
+        nftu[k][i][j] = dtt * nftu[k][i][j] / 2 + fmtu[k][i][j];
       }
 
   /***************Updating to tmp variable*********************/
@@ -562,16 +607,13 @@ int differ3(double ***ftu, double ***pftu, double ***fmtu, double ***pfmtu,
 
         nftu[k][i][j] += (DFP *
                           (ucx[k] * ucx[k] *
-                               ((ftu[k][bi][j] - ftu[k][i][j]) -
-                                (ftu[k][i][j] - ftu[k][ai][j])) +
-                           0.5 * usy[k] * ucx[k] *
-                               ((ftu[k][bi][bj] - ftu[k][bi][aj]) -
-                                (ftu[k][ai][bj] - ftu[k][ai][aj]))) /
-                          (dh * dh));
+                           ((ftu[k][bi][j] - ftu[k][i][j]) -
+                            (ftu[k][i][j] - ftu[k][ai][j]))) /
+                          (dxx * dxx));
         nftu[k][i][j] += (DFQ *
                           (((ftu[k][bi][j] - ftu[k][i][j]) -
                             (ftu[k][i][j] - ftu[k][ai][j]))) /
-                          (dh * dh));
+                          (dxx * dxx));
         nftu[k][i][j] += ((DFR * ((ftu[bk][i][j] - ftu[k][i][j]) -
                                   (ftu[k][i][j] - ftu[ak][i][j]))) /
                           (dta * dta));
@@ -580,16 +622,39 @@ int differ3(double ***ftu, double ***pftu, double ***fmtu, double ***pfmtu,
                                   (ftu[k][i][j] + ftu[ak][i][j]) *
                                       (kru[k][i][j] - kru[ak][i][j]))) /
                           (2 * dta * dta));
-        nftu[k][i][j] +=
-            -v0 * (ucx[k] * (fmtu[k][bi][j] - fmtu[k][ai][j]) / (2.0 * dh) +
-                   usy[k] * (fmtu[k][i][bj] - fmtu[k][i][aj]) /
-                       (2.0 * dh));  // drift term.
+        nftu[k][i][j] += -v0 * (ucx[k] * (fmtu[k][bi][j] - fmtu[k][ai][j]) /
+                                (2.0 * dxx));  // drift term.
+
+        //nftu[k][i][j] += (DFP *
+        //                  (ucx[k] * ucx[k] *
+        //                       ((ftu[k][bi][j] - ftu[k][i][j]) -
+        //                        (ftu[k][i][j] - ftu[k][ai][j])) +
+        //                   0.5 * usy[k] * ucx[k] *
+        //                       ((ftu[k][bi][bj] - ftu[k][bi][aj]) -
+        //                        (ftu[k][ai][bj] - ftu[k][ai][aj]))) /
+        //                  (dh * dh));
+        //nftu[k][i][j] += (DFQ *
+        //                  (((ftu[k][bi][j] - ftu[k][i][j]) -
+        //                    (ftu[k][i][j] - ftu[k][ai][j]))) /
+        //                  (dh * dh));
+        //nftu[k][i][j] += ((DFR * ((ftu[bk][i][j] - ftu[k][i][j]) -
+        //                          (ftu[k][i][j] - ftu[ak][i][j]))) /
+        //                  (dta * dta));
+        //nftu[k][i][j] += ((DFR * ((ftu[bk][i][j] + ftu[k][i][j]) *
+        //                              (kru[bk][i][j] - kru[k][i][j]) -
+        //                          (ftu[k][i][j] + ftu[ak][i][j]) *
+        //                              (kru[k][i][j] - kru[ak][i][j]))) /
+        //                  (2 * dta * dta));
+        //nftu[k][i][j] +=
+        //    -v0 * (ucx[k] * (fmtu[k][bi][j] - fmtu[k][ai][j]) / (2.0 * dh) +
+        //           usy[k] * (fmtu[k][i][bj] - fmtu[k][i][aj]) /
+        //               (2.0 * dh));  // drift term.
       }
 
   for (k = 1; k <= M; k++)
     for (i = 1; i <= Nx; i++)
       for (j = 1; j <= Ny; j++) {
-        nftu[k][i][j] = dtt * nftu[k][i][j] / 3 + ftu[k][i][j];
+        nftu[k][i][j] = dtt * nftu[k][i][j] / 2 + ftu[k][i][j];
       }
 
   /***************Updating to tmp variable*********************/
@@ -637,16 +702,13 @@ int differ3(double ***ftu, double ***pftu, double ***fmtu, double ***pfmtu,
 
         nftu[k][i][j] += (DFP *
                           (ucx[k] * ucx[k] *
-                               ((fmtu[k][bi][j] - fmtu[k][i][j]) -
-                                (fmtu[k][i][j] - fmtu[k][ai][j])) +
-                           0.5 * usy[k] * ucx[k] *
-                               ((fmtu[k][bi][bj] - fmtu[k][bi][aj]) -
-                                (fmtu[k][ai][bj] - fmtu[k][ai][aj]))) /
-                          (dh * dh));
+                           ((fmtu[k][bi][j] - fmtu[k][i][j]) -
+                            (fmtu[k][i][j] - fmtu[k][ai][j]))) /
+                          (dxx * dxx));
         nftu[k][i][j] += (DFQ *
                           (((fmtu[k][bi][j] - fmtu[k][i][j]) -
                             (fmtu[k][i][j] - fmtu[k][ai][j]))) /
-                          (dh * dh));
+                          (dxx * dxx));
         nftu[k][i][j] += ((DFR * ((fmtu[bk][i][j] - fmtu[k][i][j]) -
                                   (fmtu[k][i][j] - fmtu[ak][i][j]))) /
                           (dta * dta));
@@ -655,17 +717,40 @@ int differ3(double ***ftu, double ***pftu, double ***fmtu, double ***pfmtu,
                                   (fmtu[k][i][j] + fmtu[ak][i][j]) *
                                       (kru[k][i][j] - kru[ak][i][j]))) /
                           (2 * dta * dta));
-        nftu[k][i][j] +=
-            -v0 * (ucx[k] * (ftu[k][bi][j] - ftu[k][ai][j]) / (2.0 * dh) +
-                   usy[k] * (ftu[k][i][bj] - ftu[k][i][aj]) /
-                       (2.0 * dh));                        // drift term.
+        nftu[k][i][j] += -v0 * (ucx[k] * (ftu[k][bi][j] - ftu[k][ai][j]) /
+                                (2.0 * dxx));              // drift term.
         nftu[k][i][j] += -2.0 * reversal * fmtu[k][i][j];  // reversal term.
+        //nftu[k][i][j] += (DFP *
+        //                  (ucx[k] * ucx[k] *
+        //                       ((fmtu[k][bi][j] - fmtu[k][i][j]) -
+        //                        (fmtu[k][i][j] - fmtu[k][ai][j])) +
+        //                   0.5 * usy[k] * ucx[k] *
+        //                       ((fmtu[k][bi][bj] - fmtu[k][bi][aj]) -
+        //                        (fmtu[k][ai][bj] - fmtu[k][ai][aj]))) /
+        //                  (dh * dh));
+        //nftu[k][i][j] += (DFQ *
+        //                  (((fmtu[k][bi][j] - fmtu[k][i][j]) -
+        //                    (fmtu[k][i][j] - fmtu[k][ai][j]))) /
+        //                  (dh * dh));
+        //nftu[k][i][j] += ((DFR * ((fmtu[bk][i][j] - fmtu[k][i][j]) -
+        //                          (fmtu[k][i][j] - fmtu[ak][i][j]))) /
+        //                  (dta * dta));
+        //nftu[k][i][j] += ((DFR * ((fmtu[bk][i][j] + fmtu[k][i][j]) *
+        //                              (kru[bk][i][j] - kru[k][i][j]) -
+        //                          (fmtu[k][i][j] + fmtu[ak][i][j]) *
+        //                              (kru[k][i][j] - kru[ak][i][j]))) /
+        //                  (2 * dta * dta));
+        //nftu[k][i][j] +=
+        //    -v0 * (ucx[k] * (ftu[k][bi][j] - ftu[k][ai][j]) / (2.0 * dh) +
+        //           usy[k] * (ftu[k][i][bj] - ftu[k][i][aj]) /
+        //               (2.0 * dh));                        // drift term.
+        //nftu[k][i][j] += -2.0 * reversal * fmtu[k][i][j];  // reversal term.
       }
 
   for (k = 1; k <= M; k++)
     for (i = 1; i <= Nx; i++)
       for (j = 1; j <= Ny; j++) {
-        nftu[k][i][j] = dtt * nftu[k][i][j] / 3 + fmtu[k][i][j];
+        nftu[k][i][j] = dtt * nftu[k][i][j] / 2 + fmtu[k][i][j];
       }
 
   /***************Updating to tmp variable*********************/
@@ -719,8 +804,6 @@ void dealloc_cyclic_arrays(double ***a, double ***b, double ***c,
 
 void updating(double ***ftu, double ***pftu, double ***fmtu, double ***pfmtu) {
   int i, j, k;
-
-  /*Updating f_T f_M together.*/
   for (k = 1; k <= M; k++)
     for (i = 1; i <= Nx; i++)
       for (j = 1; j <= Ny; j++) {
@@ -744,15 +827,6 @@ int interation(double ***ftu, double ***pftu, double ***fmtu, double ***pfmtu,
   int_kp_simple(ftu, kru, x1, x2);
   differ2(ftu, pftu, fmtu, pfmtu, kru, nftu);
   updating(ftu, pftu, fmtu, pfmtu);
-  /****************************Theta*******************************************/
-  int_kp_simple(ftu, kru, x1, x2);
-  differ1(ftu, pftu, fmtu, pfmtu, kru, nftu);
-  updating(ftu, pftu, fmtu, pfmtu);
-  /****************************X-direction*************************************/
-  int_kp_simple(ftu, kru, x1, x2);
-  differ3(ftu, pftu, fmtu, pfmtu, kru, nftu);
-  updating(ftu, pftu, fmtu, pfmtu);
-
   /*********************************Output*************************************/
 
   if ((m - 1) % INTER1 == 0) {

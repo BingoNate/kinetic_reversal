@@ -35,12 +35,13 @@ void calculate_potential_w(const Mat3DDoub &ftu, Mat3DDoub &kru) {
 
 /*First in theta.*/
 int differ_theta(Mat3DDoub &ftu, Mat3DDoub &pftu, Mat3DDoub &fmtu,
-                 Mat3DDoub &pfmtu, Mat3DDoub &kru, Mat3DDoub &nftu) {
+                 Mat3DDoub &pfmtu, Mat3DDoub &kru) {
   int i, j, k;
   int ai, bi;
   int aj, bj;
   int ak, bk;
 
+  Mat3DDoub nftu(M, Nx, Ny);
   Mat3DDoub a(Nx, Ny, M);
   Mat3DDoub b(Nx, Ny, M);
   Mat3DDoub c(Nx, Ny, M);
@@ -71,7 +72,7 @@ int differ_theta(Mat3DDoub &ftu, Mat3DDoub &pftu, Mat3DDoub &fmtu,
 
         a[i][j][k] =
             -DFR * dtt / (3 * dta * dta) -
-            DFR * (kru[ak][i][j] - kru[k][i][j]) * dtt / (6 * dta * dta);
+            DFR * (kru[ak][i][j] - kru[k][i][j]) * dtt / (6 * dta * dta);  //?
       }
 
   for (i = 0; i < Nx; i++)
@@ -113,8 +114,6 @@ int differ_theta(Mat3DDoub &ftu, Mat3DDoub &pftu, Mat3DDoub &fmtu,
   for (k = 0; k < M; k++)
     for (i = 0; i < Nx; i++)
       for (j = 0; j < Ny; j++) {
-        //pftu[k][i][j] = ftu[k][i][j];  
-        //pfmtu[k][i][j] = fmtu[k][i][j];
         nftu[k][i][j] = 0;
       }
 
@@ -136,34 +135,33 @@ int differ_theta(Mat3DDoub &ftu, Mat3DDoub &pftu, Mat3DDoub &fmtu,
         if (ak < 0) ak += M;
         if (bk >= M) bk -= M;
 
+        nftu[k][i][j] += (DFP *
+                          (ucx[k] * ucx[k] *
+                               ((ftu[k][bi][j] - ftu[k][i][j]) -
+                                (ftu[k][i][j] - ftu[k][ai][j])) +
+                           usy[k] * usy[k] *
+                               ((ftu[k][i][bj] - ftu[k][i][j]) -
+                                (ftu[k][i][j] - ftu[k][i][aj])) +
+                           0.5 * usy[k] * ucx[k] *
+                               ((ftu[k][bi][bj] - ftu[k][bi][aj]) -
+                                (ftu[k][ai][bj] - ftu[k][ai][aj]))) /
+                          (dh * dh));  // DFP=D_para-D_perp
+        nftu[k][i][j] += (DFQ *
+                          (((ftu[k][bi][j] - ftu[k][i][j]) -
+                            (ftu[k][i][j] - ftu[k][ai][j])) +
+                           ((ftu[k][i][bj] - ftu[k][i][j]) -
+                            (ftu[k][i][j] - ftu[k][i][aj]))) /
+                          (dh * dh));  // DFQ=D_perp
         nftu[k][i][j] +=
-            DFP *
-            (ucx[k] * ucx[k] *
-                 (ftu[k][bi][j] - 2.0 * ftu[k][i][j] + ftu[k][ai][j]) +
-             usy[k] * usy[k] *
-                 (ftu[k][i][bj] - 2.0 * ftu[k][i][j] + ftu[k][i][aj]) +
-             0.5 * usy[k] * ucx[k] *
-                 (ftu[k][bi][bj] - ftu[k][bi][aj] - ftu[k][ai][bj] +
-                  ftu[k][ai][aj])) /
-            (dxx * dyy);  // DFP=D_para-D_perp
-
-        nftu[k][i][j] +=
-            DFQ *
-            ((ftu[k][bi][j] - 2.0 * ftu[k][i][j] + ftu[k][ai][j]) +
-             (ftu[k][i][bj] - 2.0 * ftu[k][i][j] + ftu[k][i][aj])) /
-            (dxx * dyy);  // DFQ=D_perp
-
-        nftu[k][i][j] +=
-            -v0 * (ucx[k] * (fmtu[k][bi][j] - fmtu[k][ai][j]) / (2.0 * dxx) +
+            -v0 * (ucx[k] * (fmtu[k][bi][j] - fmtu[k][ai][j]) / (2.0 * dh) +
                    usy[k] * (fmtu[k][i][bj] - fmtu[k][i][aj]) /
-                       (2.0 * dyy));  // Drift term.
+                       (2.0 * dh));  // drift term.
       }
 
   for (k = 0; k < M; k++)
     for (i = 0; i < Nx; i++)
       for (j = 0; j < Ny; j++) {
-        nftu[k][i][j] =
-            dtt * nftu[k][i][j] / 3 + ftu[k][i][j];  // 1/4 timestep.
+        nftu[k][i][j] = dtt * nftu[k][i][j] / 3 + ftu[k][i][j];
       }
 
   vector<double> rr(M);
@@ -217,35 +215,34 @@ int differ_theta(Mat3DDoub &ftu, Mat3DDoub &pftu, Mat3DDoub &fmtu,
         if (ak < 0) ak += M;
         if (bk >= M) bk -= M;
 
+        nftu[k][i][j] += (DFP *
+                          (ucx[k] * ucx[k] *
+                               ((fmtu[k][bi][j] - fmtu[k][i][j]) -
+                                (fmtu[k][i][j] - fmtu[k][ai][j])) +
+                           usy[k] * usy[k] *
+                               ((fmtu[k][i][bj] - fmtu[k][i][j]) -
+                                (fmtu[k][i][j] - fmtu[k][i][aj])) +
+                           0.5 * usy[k] * ucx[k] *
+                               ((fmtu[k][bi][bj] - fmtu[k][bi][aj]) -
+                                (fmtu[k][ai][bj] - fmtu[k][ai][aj]))) /
+                          (dh * dh));  // DFP=D_para-D_perp
+        nftu[k][i][j] += (DFQ *
+                          (((fmtu[k][bi][j] - fmtu[k][i][j]) -
+                            (fmtu[k][i][j] - fmtu[k][ai][j])) +
+                           ((fmtu[k][i][bj] - fmtu[k][i][j]) -
+                            (fmtu[k][i][j] - fmtu[k][i][aj]))) /
+                          (dh * dh));  // DFQ=D_perp
         nftu[k][i][j] +=
-            DFP *
-            (ucx[k] * ucx[k] *
-                 (fmtu[k][bi][j] - 2.0 * fmtu[k][i][j] + fmtu[k][ai][j]) +
-             usy[k] * usy[k] *
-                 (fmtu[k][i][bj] - 2.0 * fmtu[k][i][j] + fmtu[k][i][aj]) +
-             0.5 * usy[k] * ucx[k] *
-                 (fmtu[k][bi][bj] - fmtu[k][bi][aj] - fmtu[k][ai][bj] +
-                  fmtu[k][ai][aj])) /
-            (dxx * dyy);  // DFP=D_para-D_perp
-
-        nftu[k][i][j] +=
-            DFQ *
-            ((fmtu[k][bi][j] - 2.0 * fmtu[k][i][j] + fmtu[k][ai][j]) +
-             (fmtu[k][i][bj] - 2.0 * fmtu[k][i][j] + fmtu[k][i][aj])) /
-            (dxx * dyy);  // DFQ=D_perp
-
-        nftu[k][i][j] +=
-            -v0 * (ucx[k] * (ftu[k][bi][j] - ftu[k][ai][j]) / (2.0 * dxx) +
+            -v0 * (ucx[k] * (ftu[k][bi][j] - ftu[k][ai][j]) / (2.0 * dh) +
                    usy[k] * (ftu[k][i][bj] - ftu[k][i][aj]) /
-                       (2.0 * dyy));                        // Drift term.
+                       (2.0 * dh));                        // drift term.
         nftu[k][i][j] += -2.0 * reversal * fmtu[k][i][j];  // reversal term.
       }
 
   for (k = 0; k < M; k++)
     for (i = 0; i < Nx; i++)
       for (j = 0; j < Ny; j++) {
-        nftu[k][i][j] =
-            dtt * nftu[k][i][j] / 3 + fmtu[k][i][j];  // 1/4 timestep.
+        nftu[k][i][j] = dtt * nftu[k][i][j] / 3 + fmtu[k][i][j];
       }
 
   rr.clear();
@@ -265,12 +262,13 @@ int differ_theta(Mat3DDoub &ftu, Mat3DDoub &pftu, Mat3DDoub &fmtu,
 }
 
 int differ_x(Mat3DDoub &ftu, Mat3DDoub &pftu, Mat3DDoub &fmtu, Mat3DDoub &pfmtu,
-             Mat3DDoub &kru, Mat3DDoub &nftu) {
+             Mat3DDoub &kru) {
   int i, j, k;
   int ai, bi;
   int aj, bj;
   int ak, bk;
 
+  Mat3DDoub nftu(M, Nx, Ny);
   Mat3DDoub a(M, Ny, Nx);
   Mat3DDoub b(M, Ny, Nx);
   Mat3DDoub c(M, Ny, Nx);
@@ -281,33 +279,30 @@ int differ_x(Mat3DDoub &ftu, Mat3DDoub &pftu, Mat3DDoub &fmtu, Mat3DDoub &pfmtu,
     for (j = 0; j < Ny; j++)
       for (i = 0; i < Nx; i++) {
         b[k][j][i] =
-            (ucx[k] * ucx[k] * DFP + DFQ) * 2 * dtt / (3 * dxx * dyy) + 1;
+            (ucx[k] * ucx[k] * DFP + DFQ) * 2 * dtt / (3 * dh * dh) + 1;
       }
 
   for (k = 0; k < M; k++)
     for (j = 0; j < Ny; j++)
       for (i = 1; i < Nx; i++) {
-        a[k][j][i] = -(ucx[k] * ucx[k] * DFP + DFQ) * dtt / (3 * dxx * dyy);
+        a[k][j][i] = -(ucx[k] * ucx[k] * DFP + DFQ) * dtt / (3 * dh * dh);
       }
 
   for (k = 0; k < M; k++)
     for (j = 0; j < Ny; j++)
       for (i = 0; i < Nx - 1; i++) {
-        c[k][j][i] = -(ucx[k] * ucx[k] * DFP + DFQ) * dtt / (3 * dxx * dyy);
+        c[k][j][i] = -(ucx[k] * ucx[k] * DFP + DFQ) * dtt / (3 * dh * dh);
       }
 
   for (k = 0; k < M; k++)
-    for (j = 0; j < Ny; j++)  // Actually N here.
-    {
-      alpha[k][j] = -(ucx[k] * ucx[k] * DFP + DFQ) * dtt / (3 * dxx * dyy);
-      beta[k][j] = -(ucx[k] * ucx[k] * DFP + DFQ) * dtt / (3 * dxx * dyy);
+    for (j = 0; j < Ny; j++) {
+      alpha[k][j] = -(ucx[k] * ucx[k] * DFP + DFQ) * dtt / (3 * dh * dh);
+      beta[k][j] = -(ucx[k] * ucx[k] * DFP + DFQ) * dtt / (3 * dh * dh);
     }
 
   for (k = 0; k < M; k++)
     for (i = 0; i < Nx; i++)
       for (j = 0; j < Ny; j++) {
-        pftu[k][i][j] = ftu[k][i][j];
-        pfmtu[k][i][j] = fmtu[k][i][j];
         nftu[k][i][j] = 0;
       }
 
@@ -328,34 +323,30 @@ int differ_x(Mat3DDoub &ftu, Mat3DDoub &pftu, Mat3DDoub &fmtu, Mat3DDoub &pfmtu,
         if (ak < 0) ak += M;
         if (bk >= M) bk -= M;
 
+        nftu[k][i][j] += (DFP *
+                          (usy[k] * usy[k] *
+                               ((ftu[k][i][bj] - ftu[k][i][j]) -
+                                (ftu[k][i][j] - ftu[k][i][aj])) +
+                           0.5 * usy[k] * ucx[k] *
+                               ((ftu[k][bi][bj] - ftu[k][bi][aj]) -
+                                (ftu[k][ai][bj] - ftu[k][ai][aj]))) /
+                          (dh * dh));
+        nftu[k][i][j] += (DFQ *
+                          (((ftu[k][i][bj] - ftu[k][i][j]) -
+                            (ftu[k][i][j] - ftu[k][i][aj]))) /
+                          (dh * dh));
+        nftu[k][i][j] += ((DFR * ((ftu[bk][i][j] - ftu[k][i][j]) -
+                                  (ftu[k][i][j] - ftu[ak][i][j]))) /
+                          (dta * dta));
+        nftu[k][i][j] += ((DFR * ((ftu[bk][i][j] + ftu[k][i][j]) *
+                                      (kru[bk][i][j] - kru[k][i][j]) -
+                                  (ftu[k][i][j] + ftu[ak][i][j]) *
+                                      (kru[k][i][j] - kru[ak][i][j]))) /
+                          (2 * dta * dta));
         nftu[k][i][j] +=
-            DFP *
-            (usy[k] * usy[k] *
-                 (ftu[k][i][bj] - 2.0 * ftu[k][i][j] + ftu[k][i][aj]) +
-             0.5 * usy[k] * ucx[k] *
-                 (ftu[k][bi][bj] - ftu[k][bi][aj] - ftu[k][ai][bj] +
-                  ftu[k][ai][aj])) /
-            (dxx * dyy);
-        nftu[k][i][j] +=
-            DFQ * (ftu[k][i][bj] - 2.0 * ftu[k][i][j] + ftu[k][i][aj]) /
-            (dyy * dyy);
-        nftu[k][i][j] +=
-            -v0 *
-            (usy[k] * (fmtu[k][i][bj] - fmtu[k][i][aj]) / (2.0 * dyy) +
-             ucx[k] * (fmtu[k][bi][j] - fmtu[k][ai][j]) /
-                 (2.0 * dxx));  // Add drift term here: v0(u.\nabla)f_M(r,u,t).
-                                // Only \partial_y.
-        nftu[k][i][j] +=
-            DFR * (ftu[bk][i][j] - 2.0 * ftu[k][i][j] + ftu[ak][i][j]) /
-            (dta * dta);  // Actually, it is just linear term for
-                          // \partial_\theta^{2} {f(r,u,t)}.
-        nftu[k][i][j] +=
-            DFR *
-            ((ftu[bk][i][j] + ftu[k][i][j]) * (kru[bk][i][j] - kru[k][i][j]) -
-             (ftu[k][i][j] + ftu[ak][i][j]) *
-                 (kru[k][i][j] - kru[ak][i][j])) /
-            (2 * dta *
-             dta);  // This is non-linear term for interaction potential.
+            -v0 * (ucx[k] * (fmtu[k][bi][j] - fmtu[k][ai][j]) / (2.0 * dh) +
+                   usy[k] * (fmtu[k][i][bj] - fmtu[k][i][aj]) /
+                       (2.0 * dh));  // drift term. Here Modified.
       }
 
   for (k = 0; k < M; k++)
@@ -415,37 +406,31 @@ int differ_x(Mat3DDoub &ftu, Mat3DDoub &pftu, Mat3DDoub &fmtu, Mat3DDoub &pfmtu,
         if (ak < 0) ak += M;
         if (bk >= M) bk -= M;
 
+        nftu[k][i][j] += (DFP *
+                          (usy[k] * usy[k] *
+                               ((fmtu[k][i][bj] - fmtu[k][i][j]) -
+                                (fmtu[k][i][j] - fmtu[k][i][aj])) +
+                           0.5 * usy[k] * ucx[k] *
+                               ((fmtu[k][bi][bj] - fmtu[k][bi][aj]) -
+                                (fmtu[k][ai][bj] - fmtu[k][ai][aj]))) /
+                          (dh * dh));
+        nftu[k][i][j] += (DFQ *
+                          (((fmtu[k][i][bj] - fmtu[k][i][j]) -
+                            (fmtu[k][i][j] - fmtu[k][i][aj]))) /
+                          (dh * dh));
+        nftu[k][i][j] += ((DFR * ((fmtu[bk][i][j] - fmtu[k][i][j]) -
+                                  (fmtu[k][i][j] - fmtu[ak][i][j]))) /
+                          (dta * dta));
+        nftu[k][i][j] += ((DFR * ((fmtu[bk][i][j] + fmtu[k][i][j]) *
+                                      (kru[bk][i][j] - kru[k][i][j]) -
+                                  (fmtu[k][i][j] + fmtu[ak][i][j]) *
+                                      (kru[k][i][j] - kru[ak][i][j]))) /
+                          (2 * dta * dta));
         nftu[k][i][j] +=
-            DFP *
-            (usy[k] * usy[k] *
-                 (fmtu[k][i][bj] - 2.0 * fmtu[k][i][j] + fmtu[k][i][aj]) +
-             0.5 * usy[k] * ucx[k] *
-                 (fmtu[k][bi][bj] - fmtu[k][bi][aj] - fmtu[k][ai][bj] +
-                  fmtu[k][ai][aj])) /
-            (dxx * dyy);
-        nftu[k][i][j] +=
-            DFQ * (fmtu[k][i][bj] - 2.0 * fmtu[k][i][j] + fmtu[k][i][aj]) /
-            (dyy * dyy);
-        nftu[k][i][j] +=
-            -v0 *
-            (usy[k] * (ftu[k][i][bj] - ftu[k][i][aj]) / (2.0 * dyy) +
-             ucx[k] * (ftu[k][bi][j] - ftu[k][ai][j]) /
-                 (2.0 * dxx));  // Add drift term here: v0(u.\nabla)f_M(r,u,t).
-                                // Only \partial_y.
-        nftu[k][i][j] +=
-            -2.0 * reversal * fmtu[k][i][j];  // Add reversal term.
-        nftu[k][i][j] +=
-            DFR * (fmtu[bk][i][j] - 2.0 * fmtu[k][i][j] + fmtu[ak][i][j]) /
-            (dta * dta);  // Actually, it is just linear term for
-                          // \partial_\theta^{2} {f(r,u,t)}.
-        nftu[k][i][j] +=
-            DFR *
-            ((fmtu[bk][i][j] + fmtu[k][i][j]) *
-                 (kru[bk][i][j] - kru[k][i][j]) -
-             (fmtu[k][i][j] + fmtu[ak][i][j]) *
-                 (kru[k][i][j] - kru[ak][i][j])) /
-            (2 * dta *
-             dta);  // This is non-linear term for interaction potential.
+            -v0 * (ucx[k] * (ftu[k][bi][j] - ftu[k][ai][j]) / (2.0 * dh) +
+                   usy[k] * (ftu[k][i][bj] - ftu[k][i][aj]) /
+                       (2.0 * dh));                        // drift term.
+        nftu[k][i][j] += -2.0 * reversal * fmtu[k][i][j];  // drift term.
       }
 
   for (k = 0; k < M; k++)
@@ -472,12 +457,13 @@ int differ_x(Mat3DDoub &ftu, Mat3DDoub &pftu, Mat3DDoub &fmtu, Mat3DDoub &pfmtu,
 }
 
 int differ_y(Mat3DDoub &ftu, Mat3DDoub &pftu, Mat3DDoub &fmtu, Mat3DDoub &pfmtu,
-             Mat3DDoub &kru, Mat3DDoub &nftu) {
+             Mat3DDoub &kru) {
   int i, j, k;
   int ai, bi;
   int aj, bj;
   int ak, bk;
 
+  Mat3DDoub nftu(M, Nx, Ny);
   Mat3DDoub a(M, Nx, Ny);
   Mat3DDoub b(M, Nx, Ny);
   Mat3DDoub c(M, Nx, Ny);
@@ -488,33 +474,30 @@ int differ_y(Mat3DDoub &ftu, Mat3DDoub &pftu, Mat3DDoub &fmtu, Mat3DDoub &pfmtu,
     for (i = 0; i < Nx; i++)
       for (j = 0; j < Ny; j++) {
         b[k][i][j] =
-            (usy[k] * usy[k] * DFP + DFQ) * 2 * dtt / (3 * dxx * dyy) + 1;
+            (usy[k] * usy[k] * DFP + DFQ) * 2 * dtt / (3 * dh * dh) + 1;
       }
 
   for (k = 0; k < M; k++)
     for (i = 0; i < Nx; i++)
       for (j = 1; j < Ny; j++) {
-        a[k][i][j] = -(usy[k] * usy[k] * DFP + DFQ) * dtt / (3 * dxx * dyy);
+        a[k][i][j] = -(usy[k] * usy[k] * DFP + DFQ) * dtt / (3 * dh * dh);
       }
 
   for (k = 0; k < M; k++)
     for (i = 0; i < Nx; i++)
       for (j = 0; j < Ny - 1; j++) {
-        c[k][i][j] = -(usy[k] * usy[k] * DFP + DFQ) * dtt / (3 * dxx * dyy);
+        c[k][i][j] = -(usy[k] * usy[k] * DFP + DFQ) * dtt / (3 * dh * dh);
       }
 
   for (k = 0; k < M; k++)
-    for (i = 0; i < Nx; i++)  // Actually N here.
-    {
-      alpha[k][i] = -(usy[k] * usy[k] * DFP + DFQ) * dtt / (3 * dxx * dyy);
-      beta[k][i] = -(usy[k] * usy[k] * DFP + DFQ) * dtt / (3 * dxx * dyy);
+    for (i = 0; i < Nx; i++) {
+      alpha[k][i] = -(usy[k] * usy[k] * DFP + DFQ) * dtt / (3 * dh * dh);
+      beta[k][i] = -(usy[k] * usy[k] * DFP + DFQ) * dtt / (3 * dh * dh);
     }
 
   for (k = 0; k < M; k++)
     for (i = 0; i < Nx; i++)
       for (j = 0; j < Ny; j++) {
-        //pftu[k][i][j] = ftu[k][i][j];
-        //pfmtu[k][i][j] = fmtu[k][i][j];
         nftu[k][i][j] = 0;
       }
 
@@ -535,32 +518,30 @@ int differ_y(Mat3DDoub &ftu, Mat3DDoub &pftu, Mat3DDoub &fmtu, Mat3DDoub &pfmtu,
         if (ak < 0) ak += M;
         if (bk >= M) bk -= M;
 
+        nftu[k][i][j] += (DFP *
+                          (ucx[k] * ucx[k] *
+                               ((ftu[k][bi][j] - ftu[k][i][j]) -
+                                (ftu[k][i][j] - ftu[k][ai][j])) +
+                           0.5 * usy[k] * ucx[k] *
+                               ((ftu[k][bi][bj] - ftu[k][bi][aj]) -
+                                (ftu[k][ai][bj] - ftu[k][ai][aj]))) /
+                          (dh * dh));
+        nftu[k][i][j] += (DFQ *
+                          (((ftu[k][bi][j] - ftu[k][i][j]) -
+                            (ftu[k][i][j] - ftu[k][ai][j]))) /
+                          (dh * dh));
+        nftu[k][i][j] += ((DFR * ((ftu[bk][i][j] - ftu[k][i][j]) -
+                                  (ftu[k][i][j] - ftu[ak][i][j]))) /
+                          (dta * dta));
+        nftu[k][i][j] += ((DFR * ((ftu[bk][i][j] + ftu[k][i][j]) *
+                                      (kru[bk][i][j] - kru[k][i][j]) -
+                                  (ftu[k][i][j] + ftu[ak][i][j]) *
+                                      (kru[k][i][j] - kru[ak][i][j]))) /
+                          (2 * dta * dta));
         nftu[k][i][j] +=
-            DFP *
-            (ucx[k] * ucx[k] *
-                 (ftu[k][bi][j] - 2.0 * ftu[k][i][j] + ftu[k][ai][j]) +
-             0.5 * usy[k] * ucx[k] *
-                 (ftu[k][bi][bj] - ftu[k][bi][aj] - ftu[k][ai][bj] +
-                  ftu[k][ai][aj])) /
-            (dxx * dyy);
-        nftu[k][i][j] +=
-            DFQ * (ftu[k][bi][j] - 2.0 * ftu[k][i][j] + ftu[k][ai][j]) /
-            (dxx * dxx);
-        nftu[k][i][j] +=
-            -v0 *
-            (usy[k] * (fmtu[k][i][bj] - fmtu[k][i][aj]) / (2.0 * dyy) +
-             ucx[k] * (fmtu[k][bi][j] - fmtu[k][ai][j]) /
-                 (2.0 * dxx));  // Add drift term here: v0(u.\nabla)f_M(r,u,t).
-                                // Only \partial_x.
-        nftu[k][i][j] +=
-            DFR * (ftu[bk][i][j] - 2.0 * ftu[k][i][j] + ftu[ak][i][j]) /
-            (dta * dta);
-        nftu[k][i][j] +=
-            DFR *
-            ((ftu[bk][i][j] + ftu[k][i][j]) * (kru[bk][i][j] - kru[k][i][j]) -
-             (ftu[k][i][j] + ftu[ak][i][j]) *
-                 (kru[k][i][j] - kru[ak][i][j])) /
-            (2 * dta * dta);
+            -v0 * (ucx[k] * (fmtu[k][bi][j] - fmtu[k][ai][j]) / (2.0 * dh) +
+                   usy[k] * (fmtu[k][i][bj] - fmtu[k][i][aj]) /
+                       (2.0 * dh));  // drift term.
       }
 
   for (k = 0; k < M; k++)
@@ -599,7 +580,7 @@ int differ_y(Mat3DDoub &ftu, Mat3DDoub &pftu, Mat3DDoub &fmtu, Mat3DDoub &pfmtu,
   for (k = 0; k < M; k++)
     for (i = 0; i < Nx; i++)
       for (j = 0; j < Ny; j++) {
-        nftu[k][i][j] = 0; 
+        nftu[k][i][j] = 0;
       }
 
   /********f_M(r,u,t)********/
@@ -619,34 +600,31 @@ int differ_y(Mat3DDoub &ftu, Mat3DDoub &pftu, Mat3DDoub &fmtu, Mat3DDoub &pfmtu,
         if (ak < 0) ak += M;
         if (bk >= M) bk -= M;
 
+        nftu[k][i][j] += (DFP *
+                          (ucx[k] * ucx[k] *
+                               ((fmtu[k][bi][j] - fmtu[k][i][j]) -
+                                (fmtu[k][i][j] - fmtu[k][ai][j])) +
+                           0.5 * usy[k] * ucx[k] *
+                               ((fmtu[k][bi][bj] - fmtu[k][bi][aj]) -
+                                (fmtu[k][ai][bj] - fmtu[k][ai][aj]))) /
+                          (dh * dh));
+        nftu[k][i][j] += (DFQ *
+                          (((fmtu[k][bi][j] - fmtu[k][i][j]) -
+                            (fmtu[k][i][j] - fmtu[k][ai][j]))) /
+                          (dh * dh));
+        nftu[k][i][j] += ((DFR * ((fmtu[bk][i][j] - fmtu[k][i][j]) -
+                                  (fmtu[k][i][j] - fmtu[ak][i][j]))) /
+                          (dta * dta));
+        nftu[k][i][j] += ((DFR * ((fmtu[bk][i][j] + fmtu[k][i][j]) *
+                                      (kru[bk][i][j] - kru[k][i][j]) -
+                                  (fmtu[k][i][j] + fmtu[ak][i][j]) *
+                                      (kru[k][i][j] - kru[ak][i][j]))) /
+                          (2 * dta * dta));
         nftu[k][i][j] +=
-            DFP *
-            (ucx[k] * ucx[k] *
-                 (fmtu[k][bi][j] - 2.0 * fmtu[k][i][j] + fmtu[k][ai][j]) +
-             0.5 * usy[k] * ucx[k] *
-                 (fmtu[k][bi][bj] - fmtu[k][bi][aj] - fmtu[k][ai][bj] +
-                  fmtu[k][ai][aj])) /
-            (dxx * dyy);
-        nftu[k][i][j] +=
-            DFQ * (fmtu[k][bi][j] - 2.0 * fmtu[k][i][j] + fmtu[k][ai][j]) /
-            (dxx * dxx);
-        nftu[k][i][j] +=
-            -v0 *
-            (usy[k] * (ftu[k][i][bj] - ftu[k][i][aj]) / (2.0 * dyy) +
-             ucx[k] * (ftu[k][bi][j] - ftu[k][ai][j]) /
-                 (2.0 * dxx));  // Add drift term here: v0(u.\nabla)f_M(r,u,t).
-                                // Only \partial_x.
-        nftu[k][i][j] +=
-            -2.0 * reversal * fmtu[k][i][j];  // Add reversal term.
-        nftu[k][i][j] +=
-            DFR * (fmtu[bk][i][j] - 2.0 * fmtu[k][i][j] + fmtu[ak][i][j]) /
-            (dta * dta);
-        nftu[k][i][j] += DFR *
-                         ((fmtu[bk][i][j] + fmtu[k][i][j]) *
-                              (kru[bk][i][j] - kru[k][i][j]) -
-                          (fmtu[k][i][j] + fmtu[ak][i][j]) *
-                              (kru[k][i][j] - kru[ak][i][j])) /
-                         (2 * dta * dta);
+            -v0 * (ucx[k] * (ftu[k][bi][j] - ftu[k][ai][j]) / (2.0 * dh) +
+                   usy[k] * (ftu[k][i][bj] - ftu[k][i][aj]) /
+                       (2.0 * dh));                        // drift term.
+        nftu[k][i][j] += -2.0 * reversal * fmtu[k][i][j];  // reversal term.
       }
 
   for (k = 0; k < M; k++)
@@ -673,8 +651,7 @@ int differ_y(Mat3DDoub &ftu, Mat3DDoub &pftu, Mat3DDoub &fmtu, Mat3DDoub &pfmtu,
 }
 
 void updating(Mat3DDoub &ftu, Mat3DDoub &pftu, Mat3DDoub &fmtu,
-  Mat3DDoub &pfmtu)
-{
+              Mat3DDoub &pfmtu) {
   for (int k = 0; k < M; k++) {
     for (int i = 0; i < Nx; i++) {
       for (int j = 0; j < Ny; j++) {
@@ -687,27 +664,26 @@ void updating(Mat3DDoub &ftu, Mat3DDoub &pftu, Mat3DDoub &fmtu,
   }
 }
 
-void evolution(int m_step, Mat3DDoub& ftu, Mat3DDoub& pftu, Mat3DDoub& fmtu, Mat3DDoub& pfmtu,
-               vector<double>& x1, vector<double>& x2){
+void evolution(int m_step, Mat3DDoub &ftu, Mat3DDoub &pftu, Mat3DDoub &fmtu,
+               Mat3DDoub &pfmtu, vector<double> &x1, vector<double> &x2) {
   Mat3DDoub kru(M, Nx, Ny);
-  Mat3DDoub nftu(M, Nx, Ny);
-  calculate_potential_w(ftu, kru);
-  differ_theta(ftu, pftu, fmtu, pfmtu, kru, nftu);
-  updating(ftu, pftu, fmtu, pfmtu);
-  calculate_potential_w(ftu, kru);
-  differ_x(ftu, pftu, fmtu, pfmtu, kru, nftu);
+  // calculate_potential_w(ftu, kru);
+  differ_theta(ftu, pftu, fmtu, pfmtu, kru);
   updating(ftu, pftu, fmtu, pfmtu);
   // calculate_potential_w(ftu, kru);
-  //differ_theta(ftu, pftu, fmtu, pfmtu, kru, nftu);
-  //updating(ftu, pftu, fmtu, pfmtu);
+  // differ_x(ftu, pftu, fmtu, pfmtu, kru);
+  // updating(ftu, pftu, fmtu, pfmtu);
   // calculate_potential_w(ftu, kru);
-  //differ_y(ftu, pftu, fmtu, pfmtu, kru, nftu);
-  //updating(ftu, pftu, fmtu, pfmtu);
+  // differ_theta(ftu, pftu, fmtu, pfmtu, kru);
+  // updating(ftu, pftu, fmtu, pfmtu);
+  // calculate_potential_w(ftu, kru);
+  // differ_y(ftu, pftu, fmtu, pfmtu, kru);
+  // updating(ftu, pftu, fmtu, pfmtu);
   // Determine which step to output.
-  //output(m_step, ftu, fmtu, kru, x1, x2);
+  // output(m_step, ftu, fmtu, kru, x1, x2);
 }
 
-void simulation() { 
+void simulation() {
   vector<double> x1(Nx);
   vector<double> x2(Ny);
   Mat3DDoub ftu(M, Nx, Ny);
@@ -716,9 +692,11 @@ void simulation() {
   Mat3DDoub pfmtu(M, Nx, Ny);
   initial_set(set_q, x1, x2, ftu, pftu, fmtu, pfmtu);
   for (int nowtime = 0; nowtime < TOTALTIME; nowtime++) {
+#ifdef _MSC_VER
     if (nowtime % INTER2 == 0) {
       outscreen(nowtime, ftu, fmtu);
     }
+#endif  // _MSC_VER
     evolution(nowtime, ftu, pftu, fmtu, pfmtu, x1, x2);
   }
 }

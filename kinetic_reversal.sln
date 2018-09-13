@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kinetic_reversal_uu_old", "
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kinetic_reversal_uxu_old", "kinetic_reversal_uxu_old\kinetic_reversal_uxu_old.vcxproj", "{FF9A6C79-7755-4E1D-B702-EEB1EF880C72}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "1D_kinetic_reversal", "1D_kinetic_reversal\1D_kinetic_reversal.vcxproj", "{F9471E93-909D-45B0-9195-3EE9DC07523B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -41,6 +43,14 @@ Global
 		{FF9A6C79-7755-4E1D-B702-EEB1EF880C72}.Release|x64.Build.0 = Release|x64
 		{FF9A6C79-7755-4E1D-B702-EEB1EF880C72}.Release|x86.ActiveCfg = Release|Win32
 		{FF9A6C79-7755-4E1D-B702-EEB1EF880C72}.Release|x86.Build.0 = Release|Win32
+		{F9471E93-909D-45B0-9195-3EE9DC07523B}.Debug|x64.ActiveCfg = Debug|x64
+		{F9471E93-909D-45B0-9195-3EE9DC07523B}.Debug|x64.Build.0 = Debug|x64
+		{F9471E93-909D-45B0-9195-3EE9DC07523B}.Debug|x86.ActiveCfg = Debug|Win32
+		{F9471E93-909D-45B0-9195-3EE9DC07523B}.Debug|x86.Build.0 = Debug|Win32
+		{F9471E93-909D-45B0-9195-3EE9DC07523B}.Release|x64.ActiveCfg = Release|x64
+		{F9471E93-909D-45B0-9195-3EE9DC07523B}.Release|x64.Build.0 = Release|x64
+		{F9471E93-909D-45B0-9195-3EE9DC07523B}.Release|x86.ActiveCfg = Release|Win32
+		{F9471E93-909D-45B0-9195-3EE9DC07523B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
